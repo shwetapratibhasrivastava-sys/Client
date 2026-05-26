@@ -1,60 +1,82 @@
 import User from "../models/authModel.js";
-import bcrypt from "bcryptjs"
+import bcrypt from "bcryptjs";
 
+// REGISTER
 export const register = async (req, res) => {
-  const { name, email, password } = req.body;
-  if (!name || !email || !password) {
-    return res.json({ message: "All feilds are required" });
-  }
+  try {
+    const { name, email, password } = req.body;
 
-  const exisitingUser = await User.findOne({ email });
-  if (exisitingUser) {
-    return res.json({
-      message: "User already exists,Please enter other email id",
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    const existingUser = await User.findOne({ email });
+
+    if (existingUser) {
+      return res.status(400).json({
+        message: "User already exists",
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword,
     });
-  }
-  const hashedpassword = await bcrypt.hash(password, 10);
 
-  const user = await User.create({ name, email, password: hashedpassword });
-  res.json({
-    message: "User created successfully",
-    data: user,
-  });
+    res.status(201).json({
+      message: "User created successfully",
+      data: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+      },
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };
 
+// LOGIN
+export const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
 
-export const login=async(req,res)=>{
-    try {
-     const{email,password}=req.body
-  if(!email||!password)
-    {
-        return res.json({
-            message:"All fields are required"
-        })
+    if (!email || !password) {
+      return res.status(400).json({
+        message: "All fields are required",
+      });
     }
 
-    const exisitingUser=await User.findOne({email})
-    if(!exisitingUser){
-        return res.json({
-            message:"Email doesn't exists"
-        })
-    }
-     const comparePassword=await bcrypt.compare(password,exisitingUser.password)
-     if(comparePassword){
-            return res.json({
-            data:exisitingUser
-     })
-     }
-     else{
-        return res.json({
-            message:"Incorrect Password"
-        })
-     }
-   
-    } catch (error) {
-        res.json({
-            message:error.message
-        })
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
     }
 
-} 
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return res.status(400).json({
+        message: "Incorrect password",
+      });
+    }
+
+    res.status(200).json({
+      message: "Login successful",
+      data: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+      },
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

@@ -7,12 +7,12 @@ import {
   updateClient,
 } from "../controllers/clientController.js";
 
-const clientRoute = express.Router();
+const router = express.Router();
 
-clientRoute.post("/", createClient);
-clientRoute.get("/", getClient);
-clientRoute.get("/:id", getClientById);
-clientRoute.put("/:id", updateClient);
-clientRoute.delete("/:id", deleteClient);
+router.post("/", createClient);
+router.get("/", getClient);
+router.get("/:id", getClientById);
+router.put("/:id", updateClient);
+router.delete("/:id", deleteClient);
 
-export default clientRoute;
+export default router;

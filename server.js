@@ -15,15 +15,15 @@ app.use(cors());
 app.use(express.json());
 
 app.get("/", (req, res) => {
-  res.send("Api is running");
+  res.send("API is running...");
 });
 
-
+// ROUTES
+app.use("/api/auth", authRoute);
 app.use("/api/client", clientRoute);
-app.use("/api/auth",authRoute)
 
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-  console.log(`server is running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
